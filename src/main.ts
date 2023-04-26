@@ -1,26 +1,36 @@
-import { visitParents } from "../deps.ts";
-import type { Element, Plugin, Root } from "../deps.ts";
+import { is, visitParents } from "../deps.ts";
+import type { Element, Plugin, Root, Test } from "../deps.ts";
 
-const INLINE_ELEMENTS = ["em", "span", "strong"];
+interface Options {
+  childTest: Test;
+  parentTest: Test;
+}
 
 /**
- * Moves a first child `br` element on a branch of first child inline elements
- * up to the highest ancestor before the branch and a last child `br` element
- * on a branch of last child inline elements up to the highest ancestor after the branch
+ * Moves a first child node on a branch of first child nodes
+ * up to the highest ancestor before the branch and a last child node
+ * on a branch of last child nodes up to the highest ancestor after the branch
  */
 // todo: handle edge case of `undefined` at root level
-const rehypeUnwrapLinebreak: Plugin<[], Root> = () => {
+const rehypeUnwrapLinebreak: Plugin<[Options?], Root> = (args) => {
+  if (!args) {
+    throw new Error(`Missing arguments.`);
+  }
+
+  const { childTest, parentTest } = args;
+
   return (tree) => {
-    visitParents(tree, "element", (node, ancestors) => {
+    visitParents(tree, childTest, (node, ancestors) => {
       const parent = ancestors.at(-1);
 
-      if (node.tagName == "br" && INLINE_ELEMENTS.includes(parent?.tagName)) {
+      if (is(parent, parentTest)) {
         if (parent?.children.at(0) === node) {
           const { highestAncestor, index } = highestAncestorAndIndex(
             parent,
             -1,
             ancestors,
             0,
+            parentTest,
           );
 
           highestAncestor.children.splice(index, 0, parent.children.shift());
@@ -30,6 +40,7 @@ const rehypeUnwrapLinebreak: Plugin<[], Root> = () => {
             -1,
             ancestors,
             -1,
+            parentTest,
           );
 
           highestAncestor.children.splice(index + 1, 0, parent.children.pop());
@@ -53,12 +64,13 @@ function highestAncestorAndIndex(
   previousLevel: number,
   ancestors: (Root | Element)[],
   position: 0 | -1,
+  parentTest: Test,
 ): { highestAncestor: Root | Element; index: number } {
   const currentLevel = previousLevel - 1;
   const currentAncestor = ancestors.at(currentLevel);
 
   if (
-    INLINE_ELEMENTS.includes(currentAncestor?.tagName) &&
+    is(currentAncestor, parentTest) &&
     currentAncestor?.children.at(position) === previousAncestor
   ) {
     return highestAncestorAndIndex(
@@ -66,6 +78,7 @@ function highestAncestorAndIndex(
       currentLevel,
       ancestors,
       position,
+      parentTest,
     );
   }
 

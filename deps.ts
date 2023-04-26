@@ -4,6 +4,8 @@ export { unified } from "npm:unified";
 export { default as rehypeParse } from "npm:rehype-parse";
 export { default as rehypeStringify } from "npm:rehype-stringify";
 export { visitParents } from "npm:unist-util-visit-parents";
+export { is } from "npm:unist-util-is";
 
 export type { Plugin } from "npm:unified";
 export type { Element, Root } from "npm:@types/hast";
+export type { Test } from "npm:unist-util-is";

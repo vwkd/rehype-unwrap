@@ -12,6 +12,7 @@
       "rehype-parse": "rehype-parse@8.0.4",
       "rehype-stringify": "rehype-stringify@9.0.3",
       "unified": "unified@10.1.2",
+      "unist-util-is": "unist-util-is@5.2.1",
       "unist-util-visit-parents": "unist-util-visit-parents@5.1.3"
     },
     "packages": {

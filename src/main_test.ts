@@ -9,7 +9,10 @@ import rehypeUnwrapLinebreak from "./main.ts";
 
 const pipeline = unified()
   .use(rehypeParse, { fragment: true })
-  .use(rehypeUnwrapLinebreak)
+  .use(rehypeUnwrapLinebreak, {
+    childTest: (node) => node?.tagName == "br",
+    parentTest: (node) => ["em", "span", "strong"].includes(node?.tagName),
+  })
   .use(rehypeStringify);
 
 Deno.test("line break in strong, single, one level", async () => {
