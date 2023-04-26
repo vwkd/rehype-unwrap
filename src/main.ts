@@ -1,39 +1,70 @@
-import { visit } from "../deps.ts";
+import { visitParents } from "../deps.ts";
 
 const INLINE_ELEMENTS = ["em", "span", "strong"];
 
 /**
- * Recursively moves first `br` child of inline element up to parent before itself
- * and last `br` child up to parent after itself until the tree doesn't change anymore
- *
- * Note: can't move child up multiple levels directly because doesn't have reference
- * to ancestors, can only move it up one level at a time.
+ * Moves a first child `br` element on a branch of first child inline elements
+ * up to the highest ancestor before the branch and a last child `br` element
+ * on a branch of last child inline elements up to the highest ancestor after the branch
  */
 export default function rehypeUnwrapLinebreak() {
   return (tree) => {
-    (function recurse(didChange = true) {
-      if (didChange == false) {
-        return;
-      }
+    visitParents(tree, "element", (node, ancestors) => {
+      const parent = ancestors.at(-1);
 
-      let hasChanged = false;
-      visit(tree, "element", (node, index, parent) => {
-        if (
-          INLINE_ELEMENTS.includes(node.tagName) &&
-          node.children.at(0)?.tagName === "br"
-        ) {
-          parent.children.splice(index, 0, node.children.shift());
-          hasChanged = true;
-        } else if (
-          INLINE_ELEMENTS.includes(node.tagName) &&
-          node.children.at(-1)?.tagName === "br"
-        ) {
-          parent.children.splice(index + 1, 0, node.children.pop());
-          hasChanged = true;
+      if (node.tagName == "br" && INLINE_ELEMENTS.includes(parent?.tagName)) {
+        if (parent?.children.at(0) === node) {
+          const { highestAncestor, index } = highestAncestorAndIndex(
+            parent,
+            -1,
+            ancestors,
+            0,
+          );
+
+          highestAncestor.children.splice(index, 0, parent.children.shift());
+        } else if (parent?.children.at(-1) === node) {
+          const { highestAncestor, index } = highestAncestorAndIndex(
+            parent,
+            -1,
+            ancestors,
+            -1,
+          );
+
+          highestAncestor.children.splice(index + 1, 0, parent.children.pop());
         }
-      });
-
-      recurse(hasChanged);
-    })();
+      }
+    });
   };
+}
+
+/**
+ * Recursively walks up to find highest ancestor
+ * decrease level each time
+ *
+ * Note: uses tail call recursion
+ */
+function highestAncestorAndIndex(
+  previousAncestor,
+  previousLevel,
+  ancestors,
+  position,
+) {
+  const currentLevel = previousLevel - 1;
+  const currentAncestor = ancestors.at(currentLevel);
+
+  if (
+    INLINE_ELEMENTS.includes(currentAncestor?.tagName) &&
+    currentAncestor?.children.at(position) === previousAncestor
+  ) {
+    return highestAncestorAndIndex(
+      currentAncestor,
+      currentLevel,
+      ancestors,
+      position,
+    );
+  }
+
+  const index = currentAncestor?.children.indexOf(previousAncestor);
+
+  return { highestAncestor: currentAncestor, index };
 }
