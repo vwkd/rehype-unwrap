@@ -5,11 +5,11 @@ import {
   unified,
 } from "../deps.ts";
 
-import rehypeUnwrapLinebreak from "./main.ts";
+import rehypeUnwrap from "./main.ts";
 
 const pipeline = unified()
   .use(rehypeParse, { fragment: true })
-  .use(rehypeUnwrapLinebreak, {
+  .use(rehypeUnwrap, {
     childTest: (node) => node?.tagName == "br",
     parentTest: (node) => ["em", "span", "strong"].includes(node?.tagName),
   })

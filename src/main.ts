@@ -12,7 +12,7 @@ interface Options {
  * on a branch of last child nodes up to the highest ancestor after the branch
  */
 // todo: handle edge case of `undefined` at root level
-const rehypeUnwrapLinebreak: Plugin<[Options?], Root> = (args) => {
+const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
   if (!args) {
     throw new Error(`Missing arguments.`);
   }
@@ -50,7 +50,7 @@ const rehypeUnwrapLinebreak: Plugin<[Options?], Root> = (args) => {
   };
 };
 
-export default rehypeUnwrapLinebreak;
+export default rehypeUnwrap;
 
 /**
  * Recursively walks up to find highest ancestor
