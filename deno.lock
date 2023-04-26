@@ -8,6 +8,7 @@
   },
   "npm": {
     "specifiers": {
+      "@types/hast": "@types/hast@2.3.4",
       "rehype-parse": "rehype-parse@8.0.4",
       "rehype-stringify": "rehype-stringify@9.0.3",
       "unified": "unified@10.1.2",

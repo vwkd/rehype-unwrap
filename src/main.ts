@@ -1,4 +1,5 @@
 import { visitParents } from "../deps.ts";
+import type { Element, Plugin, Root } from "../deps.ts";
 
 const INLINE_ELEMENTS = ["em", "span", "strong"];
 
@@ -7,7 +8,8 @@ const INLINE_ELEMENTS = ["em", "span", "strong"];
  * up to the highest ancestor before the branch and a last child `br` element
  * on a branch of last child inline elements up to the highest ancestor after the branch
  */
-export default function rehypeUnwrapLinebreak() {
+// todo: handle edge case of `undefined` at root level
+const rehypeUnwrapLinebreak: Plugin<[], Root> = () => {
   return (tree) => {
     visitParents(tree, "element", (node, ancestors) => {
       const parent = ancestors.at(-1);
@@ -35,7 +37,9 @@ export default function rehypeUnwrapLinebreak() {
       }
     });
   };
-}
+};
+
+export default rehypeUnwrapLinebreak;
 
 /**
  * Recursively walks up to find highest ancestor
@@ -43,12 +47,13 @@ export default function rehypeUnwrapLinebreak() {
  *
  * Note: uses tail call recursion
  */
+// todo: handle edge case of `undefined` at root level
 function highestAncestorAndIndex(
-  previousAncestor,
-  previousLevel,
-  ancestors,
-  position,
-) {
+  previousAncestor: Root | Element,
+  previousLevel: number,
+  ancestors: (Root | Element)[],
+  position: 0 | -1,
+): { highestAncestor: Root | Element; index: number } {
   const currentLevel = previousLevel - 1;
   const currentAncestor = ancestors.at(currentLevel);
 
