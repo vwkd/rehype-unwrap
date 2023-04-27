@@ -1,4 +1,4 @@
-import { is, visitParents } from "../deps.ts";
+import { is, visitParents, SKIP } from "../deps.ts";
 import type { Element, Plugin, Root, Test } from "../deps.ts";
 
 interface Options {
@@ -34,7 +34,7 @@ const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
           );
 
           highestAncestor.children.splice(index, 0, parent!.children.shift()!);
-          // todo: return `SKIP` to skip deleted part of tree?
+          return SKIP;
         } else if (parent!.children.at(-1) === node) {
           const { highestAncestor, index } = highestAncestorAndIndex(
             parent!,
@@ -49,7 +49,7 @@ const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
             0,
             parent!.children.pop()!,
           );
-          // todo: return `SKIP` to skip deleted part of tree?
+          return SKIP;
         }
       }
     });
