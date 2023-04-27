@@ -11,7 +11,6 @@ interface Options {
  * up to the highest ancestor before the branch and a last child node
  * on a branch of last child nodes up to the highest ancestor after the branch
  */
-// todo: handle edge case of `undefined` at root level
 const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
   if (!args) {
     throw new Error(`Missing arguments.`);
@@ -21,29 +20,36 @@ const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
 
   return (tree) => {
     visitParents(tree, childTest, (node, ancestors) => {
-      const parent = ancestors.at(-1);
+      const parent = ancestors?.at(-1);
 
+      // `is` returns `false` if `parent` is `undefined`
       if (is(parent, parentTest)) {
-        if (parent?.children.at(0) === node) {
+        if (parent!.children.at(0) === node) {
           const { highestAncestor, index } = highestAncestorAndIndex(
-            parent,
+            parent!,
             -1,
             ancestors,
             0,
             parentTest,
           );
 
-          highestAncestor.children.splice(index, 0, parent.children.shift());
-        } else if (parent?.children.at(-1) === node) {
+          highestAncestor.children.splice(index, 0, parent!.children.shift()!);
+          // todo: return `SKIP` to skip deleted part of tree?
+        } else if (parent!.children.at(-1) === node) {
           const { highestAncestor, index } = highestAncestorAndIndex(
-            parent,
+            parent!,
             -1,
             ancestors,
             -1,
             parentTest,
           );
 
-          highestAncestor.children.splice(index + 1, 0, parent.children.pop());
+          highestAncestor.children.splice(
+            index + 1,
+            0,
+            parent!.children.pop()!,
+          );
+          // todo: return `SKIP` to skip deleted part of tree?
         }
       }
     });
@@ -58,7 +64,6 @@ export default rehypeUnwrap;
  *
  * Note: uses tail call recursion
  */
-// todo: handle edge case of `undefined` at root level
 function highestAncestorAndIndex(
   previousAncestor: Root | Element,
   previousLevel: number,
@@ -69,12 +74,13 @@ function highestAncestorAndIndex(
   const currentLevel = previousLevel - 1;
   const currentAncestor = ancestors.at(currentLevel);
 
+  // `is` returns `false` if `currentAncestor` is `undefined`
   if (
     is(currentAncestor, parentTest) &&
-    currentAncestor?.children.at(position) === previousAncestor
+    currentAncestor!.children.at(position) === previousAncestor
   ) {
     return highestAncestorAndIndex(
-      currentAncestor,
+      currentAncestor!,
       currentLevel,
       ancestors,
       position,
@@ -82,7 +88,15 @@ function highestAncestorAndIndex(
     );
   }
 
-  const index = currentAncestor?.children.indexOf(previousAncestor);
+  // edge case where every ancestor satisfied parentTest and reached root
+  if (!currentAncestor) {
+    return { highestAncestor: previousAncestor, index: position };
+  }
+
+  // @ts-ignore infers `indexOf(searchElement: ElementContent, ...)` instead of
+  // `indexOf(searchElement: RootContent | ElementContent, ...)`, seems that
+  // `RootChildren` is not properly typed as extension of `ElementChildren`
+  const index = currentAncestor.children.indexOf(previousAncestor);
 
   return { highestAncestor: currentAncestor, index };
 }

@@ -74,3 +74,19 @@ Deno.test("line break in strong, after text, two level", async () => {
 
   assertEquals(actual, expected);
 });
+
+Deno.test("root edge case", async () => {
+  const input = "foo";
+  const expected = "foo";
+
+  const actual = (await unified()
+    .use(rehypeParse, { fragment: true })
+    .use(rehypeUnwrap, {
+      childTest: (node) => true,
+      parentTest: (node) => true,
+    })
+    .use(rehypeStringify)
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
