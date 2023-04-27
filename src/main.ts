@@ -13,7 +13,7 @@ interface Options {
  */
 const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
   if (!args) {
-    throw new Error(`Missing arguments.`);
+    throw new Error(`rehype-unwrap: missing arguments.`);
   }
 
   const { childTest, parentTest } = args;
