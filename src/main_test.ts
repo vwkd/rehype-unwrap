@@ -15,7 +15,7 @@ const pipeline = unified()
   })
   .use(rehypeStringify);
 
-Deno.test("line break in strong, single, one level", async () => {
+Deno.test("one line break in one strong, single child", async () => {
   const input = "<strong><br></strong>";
   const expected = "<br><strong></strong>";
 
@@ -25,7 +25,7 @@ Deno.test("line break in strong, single, one level", async () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("line break in strong, before text, one level", async () => {
+Deno.test("one line break in one strong, before siblings", async () => {
   const input = "<strong><br>Lorem ipsum</strong>";
   const expected = "<br><strong>Lorem ipsum</strong>";
 
@@ -35,7 +35,7 @@ Deno.test("line break in strong, before text, one level", async () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("line break in strong, after text, one level", async () => {
+Deno.test("one line break in one strong, after siblings", async () => {
   const input = "<strong>Lorem ipsum<br></strong>";
   const expected = "<strong>Lorem ipsum</strong><br>";
 
@@ -45,7 +45,7 @@ Deno.test("line break in strong, after text, one level", async () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("line break in strong, single, two level", async () => {
+Deno.test("one line break in two nested strong and span, single child", async () => {
   const input = "<span><strong><br></strong></span>";
   const expected = "<br><span><strong></strong></span>";
 
@@ -55,7 +55,7 @@ Deno.test("line break in strong, single, two level", async () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("line break in strong, before text, two level", async () => {
+Deno.test("one line break in two nested strong and span, before siblings", async () => {
   const input = "<span><strong><br>Lorem ipsum</strong></span>";
   const expected = "<br><span><strong>Lorem ipsum</strong></span>";
 
@@ -65,9 +65,69 @@ Deno.test("line break in strong, before text, two level", async () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("line break in strong, after text, two level", async () => {
+Deno.test("one line break in two nested strong and span, after siblings", async () => {
   const input = "<span><strong>Lorem ipsum<br></strong></span>";
   const expected = "<span><strong>Lorem ipsum</strong></span><br>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in one strong, single child", async () => {
+  const input = "<strong><br><br></strong>";
+  const expected = "<br><br><strong></strong>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in one strong, before siblings", async () => {
+  const input = "<strong><br><br>Lorem ipsum</strong>";
+  const expected = "<br><br><strong>Lorem ipsum</strong>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in one strong, after siblings", async () => {
+  const input = "<strong>Lorem ipsum<br><br></strong>";
+  const expected = "<strong>Lorem ipsum</strong><br><br>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in two nested strong and span, single child", async () => {
+  const input = "<span><strong><br><br></strong></span>";
+  const expected = "<br><br><span><strong></strong></span>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in two nested strong and span, before siblings", async () => {
+  const input = "<span><strong><br><br>Lorem ipsum</strong></span>";
+  const expected = "<br><br><span><strong>Lorem ipsum</strong></span>";
+
+  const actual = (await pipeline
+    .process(input)).toString();
+
+  assertEquals(actual, expected);
+});
+
+Deno.test("two line breaks in two nested strong and span, after siblings", async () => {
+  const input = "<span><strong>Lorem ipsum<br><br></strong></span>";
+  const expected = "<span><strong>Lorem ipsum</strong></span><br><br>";
 
   const actual = (await pipeline
     .process(input)).toString();

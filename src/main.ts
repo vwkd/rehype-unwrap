@@ -34,6 +34,7 @@ const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
           );
 
           highestAncestor.children.splice(index, 0, parent!.children.shift()!);
+          // note: doesn't need to traverse children again since traverses in NLR
           return SKIP;
         } else if (parent!.children.at(-1) === node) {
           const { highestAncestor, index } = highestAncestorAndIndex(
@@ -49,7 +50,11 @@ const rehypeUnwrap: Plugin<[Options?], Root> = (args) => {
             0,
             parent!.children.pop()!,
           );
-          return SKIP;
+          // note: traverse children from start again since previously
+          // second to last child could now be matching last child
+          // note: can't just go back once since doesn't know index,
+          // since not passed as argument to `visitParents`
+          return [SKIP, 0];
         }
       }
     });
